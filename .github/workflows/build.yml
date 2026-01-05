@@ -1,0 +1,35 @@
+name: Build Apscios OS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xorriso syslinux syslinux-utils genisoimage qemu-utils
+
+    - name: Download Fedora ISO
+      working-directory: apscios-os
+      run: ./scripts/download_fedora.sh
+
+    - name: Build Custom ISO
+      working-directory: apscios-os
+      run: ./scripts/build_iso.sh
+
+    - name: Upload ISO Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Apscios-Workstation-Live
+        path: apscios-os/Apscios-Workstation-Live.iso
+        if-no-files-found: error

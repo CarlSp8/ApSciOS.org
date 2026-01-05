@@ -5,7 +5,15 @@ set -e
 SOURCE_ISO="Fedora-Workstation-Live-x86_64-41-1.4.iso"
 WORK_DIR="work_dir"
 NEW_ISO="Apscios-Workstation-Live.iso"
-NEW_LABEL="Apscios-41"
+# The Volume ID must match the CDLABEL expected by the bootloader.
+# Fedora 41 default is often "Fedora-WS-Live-41-1-4" or similar.
+# Since we are globally replacing 'Fedora' with 'Apscios' in the config files,
+# we need a label that matches that replacement pattern.
+# We will inspect the source label dynamically if possible, but for this script
+# we will use a label that aligns with our sed replacement strategy.
+# If original is "Fedora-WS-Live-41-1-4", sed makes it "Apscios-WS-Live-41-1-4".
+# To be safe, we will use a simplified label and force the config to match it.
+NEW_LABEL="Apscios-Live-41"
 
 # Check for required tools
 for tool in xorriso; do
@@ -25,14 +33,24 @@ rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
 
 echo "Extracting ISO..."
+# Using osirrox to allow extraction from ISO 9660 filesystem
 xorriso -osirrox on -indev "$SOURCE_ISO" -extract / "$WORK_DIR"
 
 echo "Rebranding to Apscios..."
 
 # 1. Modify GRUB configuration
-# Search for 'Fedora' and replace with 'Apscios' in typical locations
+# We perform a robust search-and-replace for the OS name in boot configurations.
+# This affects the GRUB boot menu and Isolinux boot prompt.
+# IMPORTANT: We must also update the root=live:CDLABEL= argument to match our new ISO Volume ID.
+echo "  - Patching GRUB configs..."
+# First, general rebranding
 find "$WORK_DIR" -name "grub.cfg" -exec sed -i 's/Fedora/Apscios/g' {} +
+# Second, ensure the CDLABEL matches our NEW_LABEL exactly
+find "$WORK_DIR" -name "grub.cfg" -exec sed -i "s/CDLABEL=[^ ]*/CDLABEL=$NEW_LABEL/g" {} +
+
+echo "  - Patching Isolinux configs..."
 find "$WORK_DIR" -name "isolinux.cfg" -exec sed -i 's/Fedora/Apscios/g' {} +
+find "$WORK_DIR" -name "isolinux.cfg" -exec sed -i "s/CDLABEL=[^ ]*/CDLABEL=$NEW_LABEL/g" {} +
 
 # 2. Rename EFI boot label if possible (requires binary edit or simpler just config change)
 # We stick to config changes for safety.

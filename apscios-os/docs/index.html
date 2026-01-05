@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Apscios OS Documentation</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Apscios OS Documentation</h1>
+
+    <h2>Overview</h2>
+    <p>Apscios OS is a custom Linux distribution based on Fedora Workstation.</p>
+
+    <h2>How to Build</h2>
+    <p>To produce the ISO, you need a Linux machine with <code>xorriso</code> and <code>syslinux</code> installed.</p>
+    <pre>
+git clone &lt;repo-url&gt;
+cd apscios-os
+./scripts/download_fedora.sh
+./scripts/build_iso.sh
+    </pre>
+
+    <h2>How to Run</h2>
+    <p>You can test the ISO using QEMU:</p>
+    <pre>./scripts/run_vm.sh</pre>
+
+    <h2>Download</h2>
+    <p><a href="../index.html">Go to Download Page</a></p>
+</body>
+</html>
